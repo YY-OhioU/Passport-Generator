@@ -1,0 +1,142 @@
+[
+  {
+    "image": "MO_passport_text_removed.png",
+    "annotations": [
+      {
+        "label": "type",
+        "coordinates": {
+          "x": 432.5,
+          "y": 114.0,
+          "width": 41.0,
+          "height": 26.0
+        }
+      },
+      {
+        "label": "USA",
+        "coordinates": {
+          "x": 592.5,
+          "y": 114.5,
+          "width": 59.0,
+          "height": 31.0
+        }
+      },
+      {
+        "label": "p_id",
+        "coordinates": {
+          "x": 861.0,
+          "y": 113.0,
+          "width": 198.0,
+          "height": 32.0
+        }
+      },
+      {
+        "label": "first_name",
+        "coordinates": {
+          "x": 431.0,
+          "y": 223.5,
+          "width": 122.0,
+          "height": 29.0
+        }
+      },
+      {
+        "label": "last_name",
+        "coordinates": {
+          "x": 414.5,
+          "y": 172.0,
+          "width": 99.0,
+          "height": 30.0
+        }
+      },
+      {
+        "label": "country_full",
+        "coordinates": {
+          "x": 541.5,
+          "y": 283.5,
+          "width": 353.0,
+          "height": 29.0
+        }
+      },
+      {
+        "label": "dob",
+        "coordinates": {
+          "x": 438.0,
+          "y": 334.5,
+          "width": 140.0,
+          "height": 29.0
+        }
+      },
+      {
+        "label": "date_of_issue",
+        "coordinates": {
+          "x": 446.0,
+          "y": 448.5,
+          "width": 156.0,
+          "height": 27.0
+        }
+      },
+      {
+        "label": "place_of_birth",
+        "coordinates": {
+          "x": 462.5,
+          "y": 393.5,
+          "width": 189.0,
+          "height": 35.0
+        }
+      },
+      {
+        "label": "valid_through",
+        "coordinates": {
+          "x": 437.5,
+          "y": 501.5,
+          "width": 139.0,
+          "height": 33.0
+        }
+      },
+      {
+        "label": "extra_information",
+        "coordinates": {
+          "x": 478.0,
+          "y": 559.5,
+          "width": 164.0,
+          "height": 33.0
+        }
+      },
+      {
+        "label": "bar_line_one",
+        "coordinates": {
+          "x": 526.5,
+          "y": 646.0,
+          "width": 979.0,
+          "height": 52.0
+        }
+      },
+      {
+        "label": "bar_line_two",
+        "coordinates": {
+          "x": 526.5,
+          "y": 721.5,
+          "width": 983.0,
+          "height": 47.0
+        }
+      },
+      {
+        "label": "gender",
+        "coordinates": {
+          "x": 917.5432098765433,
+          "y": 391.283950617284,
+          "width": 65.0,
+          "height": 31.0
+        }
+      },
+      {
+        "label": "authority",
+        "coordinates": {
+          "x": 930.0432098765432,
+          "y": 447.783950617284,
+          "width": 207.9999999999999,
+          "height": 34.0
+        }
+      }
+    ]
+  }
+]
