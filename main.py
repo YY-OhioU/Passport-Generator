@@ -1,10 +1,10 @@
 import json
 from faker import Faker, providers
-# from PIL import Image, ImageFont, ImageDraw
+from PIL import Image, ImageFont, ImageDraw
 # from PIL import Image, ImageDraw
-import PILasOPENCV as Image
-import PILasOPENCV as ImageDraw
-import PILasOPENCV as ImageFont
+# import PILasOPENCV as Image
+# import PILasOPENCV as ImageDraw
+# import PILasOPENCV as ImageFont
 
 from pathlib import Path
 from copy import copy, deepcopy
@@ -47,7 +47,7 @@ class ImageGenerator:
         self.load_template()
 
     def load_template(self):
-        self.font = ImageFont.truetype(str(self.font_folder/'OCRB.otf'), 27)
+        self.font = ImageFont.truetype(str(self.font_folder / 'OCRB.otf'), 27)
         tmp_image = self.template_folder / f"{self.template_name}.{self.tmp_suffix}"
         self.template = Image.open(str(tmp_image))
         # self.template.load()
@@ -63,7 +63,7 @@ class ImageGenerator:
                 center = (cor['x'], cor['y'])
                 w = cor['width']
                 h = cor['height']
-                self.pos_dict[k] = (center[0]-w/2, center[1]-h/2)
+                self.pos_dict[k] = (center[0] - w / 2, center[1] - h / 2)
 
     def gen_image(self, num, out_dir):
         for _ in range(num):
@@ -94,15 +94,30 @@ class ImageGenerator:
 
         tmp = deepcopy(self.template)
         draw = ImageDraw.Draw(tmp)
+        # gt = dict()
         # draw.fontmode = 1
         for k, pos in self.pos_dict.items():
-            draw.text([round(x)for x in pos], info[k], font=self.font, fill='black')
-            # draw.point([round(x)for x in pos], fill='red')
-            print(k, pos, info[k], ImageFont.getsize(info[k], self.font))
-        tmp.save(out)
+            actual_pos = [round(x) for x in pos]
+            string = info[k]
+            draw.text(actual_pos, string, font=self.font, fill='black')
+            # size = ImageFont.getsize(info[k], self.font)
+            bb = draw.textbbox(actual_pos, string, self.font)
+            poly = [
+                [bb[0], bb[1]],
+                [bb[0], bb[3]],
+                [bb[2], bb[3]],
+                [bb[2], bb[0]]
+            ]
 
+            # draw.rectangle(bb, outline='red', width=3)
+            for p in poly:
+                draw.point(p, fill='red')
+            print(k, pos, info[k], actual_pos, bb)
+        tmp.save(out)
+        # tmp.show()
+        # return gt
 
 
 if __name__ == '__main__':
     g = ImageGenerator('MO_passport_text_removed')
-    g.gen_image(3, 'output')
+    g.gen_image(1, 'output')
