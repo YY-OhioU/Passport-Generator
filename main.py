@@ -9,10 +9,13 @@ from PIL import Image, ImageFont, ImageDraw
 from pathlib import Path
 from copy import copy, deepcopy
 
-Faker.seed(1111)
+# Faker.seed(1111)
 CWD = Path(__file__).resolve().parent
 faker = Faker()
 faker.add_provider(providers.passport)
+
+MARGIN = 5
+BB_ADJUCT = 5
 
 
 class ImageGenerator:
@@ -44,6 +47,8 @@ class ImageGenerator:
         self.pos_dict: dict[str, tuple[float, float, float, float]] = {}
         self.font: ImageFont = None
 
+        self.show_bb = False
+
         self.load_template()
 
     def load_template(self):
@@ -66,15 +71,20 @@ class ImageGenerator:
                 self.pos_dict[k] = (center[0] - w / 2, center[1] - h / 2)
 
     def gen_image(self, num, out_dir):
+        f = open(Path(out_dir) / "ground_truth.jsonl", 'w')
         for _ in range(num):
             info = self.get_info()
             out = f"output{_}.png"
             out_f = Path(out_dir) / out
-            self.draw(info, out_f)
+            ground_truth = self.draw(info, out_f)
+            json_str = json.dumps(ground_truth, ensure_ascii=True)
+            f.write(f"{json_str}\n")
             print(f"=========Done============")
+        f.close()
 
     # Should Override for different type of data
     def get_info(self):
+
         info = copy(self.info_dict)
         pid = faker.passport_number()
         info['p_id'] = pid
@@ -87,37 +97,66 @@ class ImageGenerator:
         info['place_of_birth'] = f"{faker.administrative_unit().upper()},U.S.A"
         return info
 
+    def draw_word(self, draw, start_pos, string):
+        if string == '':
+            print(f"string: {string}")
+            return [1, 1, 1, 1]
+        wbb = [*start_pos]
+        pos = start_pos
+        for sId in range(len(string)):
+            s = string[sId]
+            margin = MARGIN
+            draw.text(pos, s, font=self.font, fill='black')
+            bb = draw.textbbox(pos, s, self.font)
+            # print(f"size for [{s}]: [{bb[2]-bb[0]}, {bb[3]-bb[1]}]")
+            pos = [bb[2] - margin, pos[1]]
+        wbb.extend([bb[2] - margin + BB_ADJUCT, bb[3]])
+        return wbb
+
     def draw(self, info, out):
-        if isinstance(out, Path):
-            print(f"convert out to str")
-            out = out.absolute().__str__()
+        # if isinstance(out, Path):
+        #     print(f"convert out to str")
+        #     out = out.absolute().__str__()
 
         tmp = deepcopy(self.template)
         draw = ImageDraw.Draw(tmp)
-        # gt = dict()
-        # draw.fontmode = 1
+        gt_dict = dict()
         for k, pos in self.pos_dict.items():
             actual_pos = [round(x) for x in pos]
             string = info[k]
-            draw.text(actual_pos, string, font=self.font, fill='black')
-            # size = ImageFont.getsize(info[k], self.font)
-            bb = draw.textbbox(actual_pos, string, self.font)
-            poly = [
-                [bb[0], bb[1]],
-                [bb[0], bb[3]],
-                [bb[2], bb[3]],
-                [bb[2], bb[0]]
-            ]
+            gt_dict[k] = {
+                'text': string,
+                'bb': None
+            }
+            if not string:
+                # print(f"No content for key: {k}")
+                continue
 
-            # draw.rectangle(bb, outline='red', width=3)
-            for p in poly:
-                draw.point(p, fill='red')
-            print(k, pos, info[k], actual_pos, bb)
+            #  old drawing
+            # draw.text(actual_pos, string, font=self.font, fill='black')
+            # bb = draw.textbbox(actual_pos, string, self.font)
+
+            bb = self.draw_word(draw, actual_pos, string)
+            gt_dict[k]['bb'] = bb
+
+            if self.show_bb:
+                # bb = draw.textbbox(actual_pos, string, self.font)
+                poly = [
+                    [bb[0], bb[1]],
+                    [bb[0], bb[3]],
+                    [bb[2], bb[3]],
+                    [bb[2], bb[1]]
+                ]
+
+                # draw.rectangle(bb, outline='red', width=3)
+
+                colors = ['red', 'black', 'green', 'yellow']
+                for idx, p in enumerate(poly):
+                    draw.point(p, fill=colors[idx])
         tmp.save(out)
-        # tmp.show()
-        # return gt
+        return gt_dict
 
 
 if __name__ == '__main__':
     g = ImageGenerator('MO_passport_text_removed')
-    g.gen_image(1, 'output')
+    g.gen_image(3, 'output')
