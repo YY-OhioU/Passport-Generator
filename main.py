@@ -7,7 +7,7 @@ from PIL import Image, ImageFont, ImageDraw
 from faker import Faker, providers
 from tqdm import tqdm
 
-# Faker.seed(1111)
+Faker.seed(1591)
 CWD = Path(__file__).resolve().parent
 faker = Faker()
 faker.add_provider(providers.passport)
@@ -140,7 +140,6 @@ class ImageGenerator:
             gt_dict[k]['bb'] = bb
 
             if self.show_bb:
-                # bb = draw.textbbox(actual_pos, string, self.font)
                 poly = [
                     [bb[0], bb[1]],
                     [bb[0], bb[3]],
@@ -148,9 +147,9 @@ class ImageGenerator:
                     [bb[2], bb[1]]
                 ]
 
-                # draw.rectangle(bb, outline='red', width=3)
+                draw.rectangle(bb, outline='red', width=1)
 
-                colors = ['red', 'black', 'green', 'yellow']
+                colors = ['blue', 'black', 'green', 'yellow']
                 for idx, p in enumerate(poly):
                     draw.point(p, fill=colors[idx])
         tmp.save(out)
