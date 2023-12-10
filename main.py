@@ -1,13 +1,11 @@
 import json
-from faker import Faker, providers
-from PIL import Image, ImageFont, ImageDraw
-# from PIL import Image, ImageDraw
-# import PILasOPENCV as Image
-# import PILasOPENCV as ImageDraw
-# import PILasOPENCV as ImageFont
-
-from pathlib import Path
+from argparse import ArgumentParser
 from copy import copy, deepcopy
+from pathlib import Path
+
+from PIL import Image, ImageFont, ImageDraw
+from faker import Faker, providers
+from tqdm import tqdm
 
 # Faker.seed(1111)
 CWD = Path(__file__).resolve().parent
@@ -15,7 +13,9 @@ faker = Faker()
 faker.add_provider(providers.passport)
 
 MARGIN = 5
-BB_ADJUCT = 5
+BB_ADJUST = 5
+
+TMP_NAME = 'MO_passport_text_removed'
 
 
 class ImageGenerator:
@@ -72,14 +72,14 @@ class ImageGenerator:
 
     def gen_image(self, num, out_dir):
         f = open(Path(out_dir) / "ground_truth.jsonl", 'w')
-        for _ in range(num):
+        for _ in tqdm(range(num)):
             info = self.get_info()
             out = f"output{_}.png"
             out_f = Path(out_dir) / out
             ground_truth = self.draw(info, out_f)
             json_str = json.dumps(ground_truth, ensure_ascii=True)
             f.write(f"{json_str}\n")
-            print(f"=========Done============")
+            # print(f"=========Done============")
         f.close()
 
     # Should Override for different type of data
@@ -110,7 +110,7 @@ class ImageGenerator:
             bb = draw.textbbox(pos, s, self.font)
             # print(f"size for [{s}]: [{bb[2]-bb[0]}, {bb[3]-bb[1]}]")
             pos = [bb[2] - margin, pos[1]]
-        wbb.extend([bb[2] - margin + BB_ADJUCT, bb[3]])
+        wbb.extend([bb[2] - margin + BB_ADJUST, bb[3]])
         return wbb
 
     def draw(self, info, out):
@@ -158,5 +158,25 @@ class ImageGenerator:
 
 
 if __name__ == '__main__':
-    g = ImageGenerator('MO_passport_text_removed')
-    g.gen_image(3, 'output')
+    parser = ArgumentParser(
+        prog=f'python {Path(__file__).name}',
+        description='Generate fake passport images'
+    )
+    parser.add_argument('-n', '--number', type=int, help='num of images', default=3)
+    parser.add_argument('-o', '--output', type=str, help='output directory', default='output')
+    parser.add_argument('-b', '--bbox', action='store_true', help='show vertices of bounding boxes')
+    args = parser.parse_args()
+    count = args.number
+    output_dir = Path(args.output).resolve()
+    show_bb = args.bbox
+
+    g = ImageGenerator(TMP_NAME)
+    if show_bb:
+        g.show_bb = True
+
+    tmp_prefix = (Path(g.template_folder) / TMP_NAME).absolute()
+    msg = f"Going to generate [{count}] samples in [{output_dir}]\n" \
+          f"Template:\n\t{tmp_prefix}.png\n\t{tmp_prefix}.json"
+    print(msg)
+    print("Generating...")
+    g.gen_image(count, output_dir)
