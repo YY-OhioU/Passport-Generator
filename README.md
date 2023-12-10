@@ -4,6 +4,8 @@
 `pip install -r requirements.txt`
 
 ### Run code
+Code will generate images with annotations.
+Annotations will be organized in a json lines format in `ground_truth.jsonl`
 ```
 usage: python main.py [-h] [-n NUMBER] [-o OUTPUT] [-b]
 
