@@ -1,4 +1,5 @@
 import json
+import random
 from argparse import ArgumentParser
 from copy import copy, deepcopy
 from pathlib import Path
@@ -8,6 +9,7 @@ from faker import Faker, providers
 from tqdm import tqdm
 
 Faker.seed(1591)
+random.seed(1591)
 CWD = Path(__file__).resolve().parent
 faker = Faker()
 faker.add_provider(providers.passport)
@@ -88,7 +90,8 @@ class ImageGenerator:
         info = copy(self.info_dict)
         pid = faker.passport_number()
         info['p_id'] = pid
-        gender = faker.passport_gender()
+        # gender = faker.passport_gender()  # faker sometimes gives 'X' as gender
+        gender = random.choice(['M', 'F'])
         info['gender'] = gender
         name = faker.passport_owner(gender)
         info['first_name'], info['last_name'] = name
