@@ -8,8 +8,9 @@ from PIL import Image, ImageFont, ImageDraw
 from faker import Faker, providers
 from tqdm import tqdm
 
-Faker.seed(1591)
-random.seed(1591)
+# Faker.seed(1591)
+# random.seed(1591)
+
 CWD = Path(__file__).resolve().parent
 faker = Faker()
 faker.add_provider(providers.passport)
