@@ -19,3 +19,4 @@ options:
                         output directory
   -b, --bbox            show vertices of bounding boxes
 ```
+`OUTPUT` folder needs to be created before the execution of this script
