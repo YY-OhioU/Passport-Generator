@@ -79,7 +79,8 @@ class ImageGenerator:
             out = f"output{_}.png"
             out_f = Path(out_dir) / out
             ground_truth = self.draw(info, out_f)
-            json_str = json.dumps(ground_truth, ensure_ascii=True)
+            anno = {'file_name': out, 'ground_truth': ground_truth}
+            json_str = json.dumps(anno, ensure_ascii=True)
             f.write(f"{json_str}\n")
             # print(f"=========Done============")
         f.close()
