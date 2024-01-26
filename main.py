@@ -231,7 +231,7 @@ if __name__ == '__main__':
     )
     parser.add_argument('-n', '--number', type=int, help='num of images', default=3)
     parser.add_argument('-o', '--output', type=str, help='output directory', default='output')
-    parser.add_argument('-b', '--bbox', action='store_true', help='show vertices of bounding boxes')
+    parser.add_argument('-b', '--bbox', action='store_true', help='draw bounding boxes')
     parser.add_argument('-a', '--augment', action='store_true', help='Augment data. Perform transformations to images')
     args = parser.parse_args()
     count = args.number

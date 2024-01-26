@@ -17,6 +17,7 @@ options:
                         num of images
   -o OUTPUT, --output OUTPUT
                         output directory
-  -b, --bbox            show vertices of bounding boxes
+  -b, --bbox            draw bounding boxes
+  -a, --augment         Augment data. Perform transformations to images
 ```
 `OUTPUT` folder needs to be created before the execution of this script
