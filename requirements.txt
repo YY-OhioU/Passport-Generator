@@ -1,3 +1,5 @@
 Faker
 Pillow
 tqdm
+opencv-python
+numpy
