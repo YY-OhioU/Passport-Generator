@@ -23,6 +23,7 @@ BB_ADJUST = 5
 
 MIN_SCALE_FACTOR = 0.5
 MAX_ROTATION = 40
+MAX_PROJ_SCALE = 0.5
 
 TMP_NAME = 'MO_passport_text_removed'
 
@@ -213,12 +214,13 @@ class ImageGenerator:
             cv_image = cv2.cvtColor(np.array(tmp), cv2.COLOR_RGB2BGR)
             scale_factor = 1 - (np.random.rand() * MIN_SCALE_FACTOR)
             rotation_angle = (np.random.rand() * 2 - 1) * MAX_ROTATION  # counter-clockwise
+            projection_scale = np.random.rand() * MAX_PROJ_SCALE 
 
             # Transformation always follows the procedure of: scaling -> rotation
-            cv_image = rotate(scale(cv_image, scale_factor), rotation_angle, False)
+            cv_image = proj(rotate(scale(cv_image, scale_factor), rotation_angle, False), projection_scale)
 
             cv2.imwrite(str(out), cv_image)
-            transformation.update({'scale': scale_factor, 'rotation': rotation_angle})
+            transformation.update({'scale': scale_factor, 'rotation': rotation_angle, 'projection_scale':projection_scale})
         else:
             tmp.save(out)
         return gt_dict, transformation
