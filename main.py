@@ -3,6 +3,7 @@ import random
 from argparse import ArgumentParser
 from collections.abc import Iterable
 from copy import copy, deepcopy
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import cv2
@@ -21,9 +22,12 @@ faker.add_provider(providers.passport)
 MARGIN = 5
 BB_ADJUST = 5
 
-MIN_SCALE_FACTOR = 0.5
-MAX_ROTATION = 40
-MAX_PROJ_SCALE = 0.4
+MIN_SCALE_FACTOR = 0.3
+MAX_ROTATION = 10
+MAX_PROJ_SCALE = 0.2
+
+DATE_FMT = '%d %b %Y'
+DATE_DIFF = timedelta(1)
 
 TMP_NAME = 'MO_passport_text_removed'
 
@@ -97,10 +101,12 @@ class ImageGenerator:
         'authority': 'United States'
     }
 
-    def __init__(self, template_name, output_dir, augment, suffix='png'):
+    def __init__(self, template_name, output_dir, scaling, rotation, projection, suffix='png'):
         self.template_name = template_name
         self.out_dir = output_dir
-        self.augment = augment
+        self.scaling = scaling
+        self.rotation = rotation
+        self.projection = projection
 
         self.tmp_suffix = suffix
         self.tmp_res: tuple[int, int] = ()
@@ -151,10 +157,12 @@ class ImageGenerator:
         gender = random.choice(['M', 'F'])
         info['gender'] = gender
         name = faker.passport_owner(gender)
-        info['first_name'], info['last_name'] = name
+        info['first_name'], info['last_name'] = [n.upper() for n in name]
         dob = faker.passport_dob()
-        info['dob'], info['date_of_issue'], info['valid_through'] = faker.passport_dates(dob)
-        info['place_of_birth'] = f"{faker.administrative_unit().upper()},U.S.A"
+        info['dob'], info['date_of_issue'], info['valid_through'] = [x.upper() for x in faker.passport_dates(dob)]
+        _d = datetime.strptime(info['valid_through'], DATE_FMT)
+        info['valid_through'] = (_d - DATE_DIFF).strftime(DATE_FMT)
+        info['place_of_birth'] = f"{faker.administrative_unit().upper()}, U.S.A"
         return info
 
     def draw_word(self, draw, start_pos, string):
@@ -210,19 +218,25 @@ class ImageGenerator:
                 for idx, p in enumerate(poly):
                     draw.point(p, fill=colors[idx])
 
-        if self.augment:
-            cv_image = cv2.cvtColor(np.array(tmp), cv2.COLOR_RGB2BGR)
+        cv_image = cv2.cvtColor(np.array(tmp), cv2.COLOR_RGB2BGR)
+        scale_factor = None
+        rotation_angle = None
+        projection_scale = None
+
+        if self.scaling:
             scale_factor = round(1 - (np.random.rand() * MIN_SCALE_FACTOR), 6)
+            cv_image = scale(cv_image, scale_factor)
+
+        if self.rotation:
             rotation_angle = round((np.random.rand() * 2 - 1) * MAX_ROTATION, 6)  # counter-clockwise
-            projection_scale = round(np.random.rand() * MAX_PROJ_SCALE, 6) 
+            cv_image = rotate(cv_image, rotation_angle, False)
 
-            # Transformation always follows the procedure of: scaling -> rotation
-            cv_image = proj(rotate(scale(cv_image, scale_factor), rotation_angle, False), projection_scale)
-
-            cv2.imwrite(str(out), cv_image)
-            transformation.update({'scale': scale_factor, 'rotation': rotation_angle, 'projection_scale':projection_scale})
-        else:
-            tmp.save(out)
+        if self.projection:
+            projection_scale = round(np.random.rand() * MAX_PROJ_SCALE, 6)
+            cv_image = proj(cv_image, projection_scale)
+        
+        cv2.imwrite(str(out), cv_image)
+        transformation.update({'scale': scale_factor, 'rotation': rotation_angle, 'projection_scale':projection_scale})
         return gt_dict, transformation
 
 
@@ -234,12 +248,16 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--number', type=int, help='num of images', default=3)
     parser.add_argument('-o', '--output', type=str, help='output directory', default='output')
     parser.add_argument('-b', '--bbox', action='store_true', help='draw bounding boxes')
-    parser.add_argument('-a', '--augment', action='store_true', help='Augment data. Perform transformations to images')
+    parser.add_argument('-s', '--scaling', action='store_true', help='Scale image')
+    parser.add_argument('-r', '--rotation', action='store_true', help='Rotation')
+    parser.add_argument('-p', '--projection', action='store_true', help='Apply projection')
     args = parser.parse_args()
     count = args.number
     output_dir = Path(args.output)
     show_bb = args.bbox
-    do_augment = args.augment
+    scaling = args.scaling
+    rotation = args.rotation
+    projection = args.projection
 
     # Check output folder
     if output_dir.is_dir():
@@ -249,7 +267,7 @@ if __name__ == '__main__':
     else:
         print(f"{output_dir.resolve()} does not exist or is not a folder")
 
-    g = ImageGenerator(TMP_NAME, output_dir, do_augment)
+    g = ImageGenerator(TMP_NAME, output_dir, scaling, rotation, projection)
     if show_bb:
         g.show_bb = True
 
